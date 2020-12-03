@@ -1,5 +1,5 @@
 spacy
-requests==2.22.0
+requests
 numpy
 jupyter
 pandas
@@ -8,11 +8,9 @@ haikunator
 schwifty
 faker
 sklearn
-https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-2.2.5/en_core_web_lg-2.2.5.tar.gz
 regex
 #azureml
 #azureml-sdk
 #flair
 sklearn_crfsuite
 pytest
-presidio_analyzer

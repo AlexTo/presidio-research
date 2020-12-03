@@ -81,13 +81,13 @@ def read_synth_dataset(filepath=None, length=None):
 if __name__ == "__main__":
 
     # PARAMS:
-    EXAMPLES = 30
+    EXAMPLES = 10000
     PII_FILE_SIZE = 3000
     SPAN_TO_TAG = True
-    TEMPLATES_FILE = 'raw_data/templates.txt'
+    TEMPLATES_FILE = 'raw_data/ontonotes_based_templates.txt'
     KEEP_ONLY_TAGGED = False
     LOWER_CASE_RATIO = 0.1
-    IGNORE_TYPES = {"IP_ADDRESS", 'US_SSN', 'URL'}
+    IGNORE_TYPES = {}
 
     cur_time = datetime.date.today().strftime("%B %d %Y")
     OUTPUT = "generated_size_{}_date_{}.txt".format(EXAMPLES, cur_time)

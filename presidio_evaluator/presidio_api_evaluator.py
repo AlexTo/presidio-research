@@ -4,6 +4,7 @@ from typing import List
 import requests
 
 from presidio_evaluator import InputSample, ModelEvaluator
+from presidio_evaluator.data_generator import read_synth_dataset
 from presidio_evaluator.span_to_tag import span_to_tag, tokenize
 
 ENDPOINT = "http://40.113.201.221:8080/api/v1/projects/test/analyze"
@@ -116,18 +117,39 @@ class PresidioAPIEvaluator(ModelEvaluator):
 
 
 if __name__ == "__main__":
-    # Example:
-    text = "My siblings are Dan and magen"
-    bilou_tags = ['O', 'O', 'O', 'U-PERSON', 'O', 'U-PERSON']
-    presidio = PresidioAPIEvaluator(verbose=True, all_fields=True, compare_by_io=True)
-    tokens = tokenize(text)
-    s = InputSample(text, masked=None, spans=None)
-    s.tokens = tokens
-    s.tags = bilou_tags
+    MY_PRESIDIO_ENDPOINT = "http://localhost:8080/api/v1/projects/test/analyze"
 
-    evaluated_sample = presidio.evaluate_sample(s)
-    p, r, entity_recall, f, mistakes = presidio.calculate_score([evaluated_sample])
-    print("Precision = {}\n"
-          "Recall = {}\n"
-          "F_3 = {}\n"
-          "Errors = {}".format(p, r, f, mistakes))
+    input_samples = read_synth_dataset("data/generated_size_10000_date_November 27 2020.txt")
+
+    # Mapping between dataset entities and Presidio entities. Key: Dataset entity, Value: Presidio entity
+    entities_mapping = {
+        'PERSON': 'PERSON',
+        'EMAIL': 'EMAIL_ADDRESS',
+        'CREDIT_CARD': 'CREDIT_CARD',
+        'FIRST_NAME': 'PERSON',
+        'PHONE_NUMBER': 'PHONE_NUMBER',
+        'LOCATION': 'LOCATION',
+        'BIRTHDAY': 'DATE_TIME',
+        'DATE': 'DATE_TIME',
+        'DOMAIN': 'DOMAIN',
+        'CITY': 'LOCATION',
+        'ADDRESS': 'LOCATION',
+        'IBAN': 'IBAN_CODE',
+        'URL': 'DOMAIN_NAME',
+        'US_SSN': 'US_SSN',
+        'IP_ADDRESS': 'IP_ADDRESS',
+        'ORGANIZATION': 'ORG',
+        'O': 'O'
+    }
+    presidio_fields = ['CREDIT_CARD', 'CRYPTO', 'DATE_TIME', 'DOMAIN_NAME', 'EMAIL_ADDRESS', 'IBAN_CODE', 'ORG',
+                       'IP_ADDRESS', 'NRP', 'LOCATION', 'PERSON', 'PHONE_NUMBER', 'US_SSN']
+
+    new_list = ModelEvaluator.align_input_samples_to_presidio_analyzer(input_samples,
+                                                                       entities_mapping,
+                                                                       presidio_fields)
+
+    presidio = PresidioAPIEvaluator(all_fields=True, endpoint=MY_PRESIDIO_ENDPOINT)
+
+    evaluated_sample = presidio.evaluate_all(new_list)
+    evaluation_result = presidio.calculate_score(evaluated_sample)
+    evaluation_result.print()
