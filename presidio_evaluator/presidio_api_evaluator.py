@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 from typing import List
 
 import requests
@@ -92,12 +93,13 @@ class PresidioAPIEvaluator(ModelEvaluator):
             "fields": [{"name": "EMAIL_ADDRESS"}, {"name": "IP_ADDRESS"},
                        {"name": "US_DRIVER_LICENSE"},
                        {"name": "US_ITIN"}, {"name": "US_SSN"},
-                       {"name": "DOMAIN_NAME"},
+                       {"name": "DOMAIN_NAME"}, {"name": "BIRTHDAY"},
                        {"name": "IBAN_CODE"}, {"name": "PERSON"},
                        {"name": "PHONE_NUMBER"},
                        {"name": "US_BANK_NUMBER"}, {"name": "CRYPTO"},
                        {"name": "NRP"},
-                       {"name": "UK_NHS"}, {"name": "CREDIT_CARD"},
+                       {"name": "UK_NHS"},
+                       {"name": "CREDIT_CARD"},
                        {"name": "DATE_TIME"},
                        {"name": "LOCATION"}, {"name": "US_PASSPORT"}]}
 
@@ -119,7 +121,7 @@ class PresidioAPIEvaluator(ModelEvaluator):
 if __name__ == "__main__":
     MY_PRESIDIO_ENDPOINT = "http://localhost:8080/api/v1/projects/test/analyze"
 
-    input_samples = read_synth_dataset("data/generated_size_10000_date_November 27 2020.txt")
+    input_samples = read_synth_dataset("data/synth_dataset.json")
 
     # Mapping between dataset entities and Presidio entities. Key: Dataset entity, Value: Presidio entity
     entities_mapping = {
@@ -129,7 +131,7 @@ if __name__ == "__main__":
         'FIRST_NAME': 'PERSON',
         'PHONE_NUMBER': 'PHONE_NUMBER',
         'LOCATION': 'LOCATION',
-        'BIRTHDAY': 'DATE_TIME',
+        'BIRTHDAY': 'BIRTHDAY',
         'DATE': 'DATE_TIME',
         'DOMAIN': 'DOMAIN',
         'CITY': 'LOCATION',
@@ -141,14 +143,21 @@ if __name__ == "__main__":
         'ORGANIZATION': 'ORG',
         'O': 'O'
     }
-    presidio_fields = ['CREDIT_CARD', 'CRYPTO', 'DATE_TIME', 'DOMAIN_NAME', 'EMAIL_ADDRESS', 'IBAN_CODE', 'ORG',
+    presidio_fields = ['CREDIT_CARD', 'CRYPTO', 'BIRTHDAY', 'DOMAIN_NAME', 'EMAIL_ADDRESS', 'IBAN_CODE', 'ORG',
                        'IP_ADDRESS', 'NRP', 'LOCATION', 'PERSON', 'PHONE_NUMBER', 'US_SSN']
 
     new_list = ModelEvaluator.align_input_samples_to_presidio_analyzer(input_samples,
                                                                        entities_mapping,
                                                                        presidio_fields)
 
-    presidio = PresidioAPIEvaluator(all_fields=True, endpoint=MY_PRESIDIO_ENDPOINT)
+    flatten = lambda l: [item for sublist in l for item in sublist]
+
+    count_per_entity_new = Counter(
+        [span.entity_type for span in flatten([input_sample.spans for input_sample in new_list])])
+
+    presidio = PresidioAPIEvaluator(all_fields=False,
+                                    entities_to_keep=list(count_per_entity_new.keys()),
+                                    endpoint=MY_PRESIDIO_ENDPOINT)
 
     evaluated_sample = presidio.evaluate_all(new_list)
     evaluation_result = presidio.calculate_score(evaluated_sample)

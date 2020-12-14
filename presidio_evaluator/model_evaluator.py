@@ -246,7 +246,7 @@ class ModelEvaluator(ABC):
     @staticmethod
     def align_input_samples_to_presidio_analyzer(input_samples: List[InputSample],
                                                  entities_mapping: Dict[str, str],
-                                                 presidio_fields: List[str]=None) \
+                                                 presidio_fields: List[str] = None) \
             -> List[InputSample]:
         """
         Change input samples to conform with Presidio's entities
@@ -257,8 +257,8 @@ class ModelEvaluator(ABC):
 
         # Match entity names to Presidio's
         if not presidio_fields:
-            presidio_fields = ['CREDIT_CARD', 'CRYPTO', 'DATE_TIME', 'DOMAIN_NAME', 'EMAIL_ADDRESS', 'IBAN_CODE',
-                           'IP_ADDRESS', 'NRP', 'LOCATION', 'PERSON', 'PHONE_NUMBER', 'US_SSN']
+            presidio_fields = ['CREDIT_CARD', 'BIRTHDAY', 'CRYPTO', 'DATE_TIME', 'DOMAIN_NAME', 'EMAIL_ADDRESS',
+                               'IBAN_CODE', 'IP_ADDRESS', 'NRP', 'LOCATION', 'PERSON', 'PHONE_NUMBER', 'US_SSN']
 
         # A list that will contain updated input samples,
         new_list = []
@@ -374,7 +374,7 @@ class ModelEvaluator(ABC):
             raise ValueError("error_type should be either FP or FN")
 
         if len(filtered_errors) == 0:
-            print("No errors of type {} and entity {} were found".format(error_type,entity))
+            print("No errors of type {} and entity {} were found".format(error_type, entity))
             return None
 
         errors_df = pd.DataFrame.from_records([error.__dict__ for error in filtered_errors])
