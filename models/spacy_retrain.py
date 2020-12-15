@@ -7,7 +7,7 @@ from pathlib import Path
 import spacy
 from azureml.core import Workspace, Experiment
 from spacy.util import minibatch, compounding
-
+from spacy.training import Example
 from presidio_evaluator import SpacyEvaluator, InputSample
 
 logging.basicConfig(level=logging.INFO)
@@ -137,14 +137,20 @@ class SpacyRetrainer:
             # training a new model
             if model is None:
                 nlp.begin_training()
+
+            examples = []
+            for text, annots in train_data:
+                examples.append(Example.from_dict(nlp.make_doc(text), annots))
+            nlp.initialize(lambda: examples)
+
             for itn in range(n_iter):
-                random.shuffle(train_data)
+                random.shuffle(examples)
                 losses = {}
                 # batch up the examples using spaCy's minibatch
-                batches = minibatch(train_data, size=compounding(4.0, 32.0, 1.001))
+                batches = minibatch(examples, size=compounding(4.0, 32.0, 1.001))
                 for batch in batches:
-                    texts, annotations = zip(*batch)
-                    nlp.update(texts, annotations, drop=self.dropout, losses=losses, )
+                    # texts, annotations = zip(*batch)
+                    nlp.update(batch, drop=self.dropout, losses=losses, )
                 logging.debug("Losses", losses)
                 if self.has_aml:
                     self.aml_run.log('Losses', losses['ner'])
@@ -200,7 +206,7 @@ class SpacyRetrainer:
 
 
 if __name__ == "__main__":
-    spacy_retrainer = SpacyRetrainer(original_model_name='en_core_web_lg',
-                                     experiment_name='spacy_new_ontonotes28',
+    spacy_retrainer = SpacyRetrainer(original_model_name='en_core_web_trf',
+                                     experiment_name='spacy_new_1',
                                      n_iter=500, dropout=0.5, aml_config=None)
     spacy_retrainer.run()

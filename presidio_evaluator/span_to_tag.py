@@ -6,7 +6,7 @@ import spacy
 loaded_spacy = {}
 
 
-def get_spacy(loaded_spacy=loaded_spacy, model_version="en_core_web_lg"):
+def get_spacy(loaded_spacy=loaded_spacy, model_version="en_core_web_trf"):
     if model_version not in loaded_spacy:
         disable = ['vectors', 'textcat', 'ner']
         print("loading model {}".format(model_version))
@@ -14,7 +14,7 @@ def get_spacy(loaded_spacy=loaded_spacy, model_version="en_core_web_lg"):
     return loaded_spacy[model_version]
 
 
-def tokenize(text, model_version="en_core_web_lg"):
+def tokenize(text, model_version="en_core_web_trf"):
     return get_spacy(model_version=model_version)(text)
 
 

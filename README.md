@@ -120,7 +120,7 @@ First, you would have to create train and test pickle files for your train and t
 
 ```python
 from models import SpacyRetrainer
-spacy_retrainer = SpacyRetrainer(original_model_name='en_core_web_lg',
+spacy_retrainer = SpacyRetrainer(original_model_name='en_core_web_trf',
                                  experiment_name='new_spacy_experiment',
                                  n_iter=500, dropout=0.1, aml_config=None)
 spacy_retrainer.run()

@@ -8,7 +8,7 @@ def test_spacy_simple():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     input_samples = read_synth_dataset(os.path.join(dir_path, "data/generated_small.txt"))
 
-    spacy_evaluator = SpacyEvaluator(model_name="en_core_web_lg", entities_to_keep=['PERSON'])
+    spacy_evaluator = SpacyEvaluator(model_name="en_core_web_trf", entities_to_keep=['PERSON'])
     evaluation_results = spacy_evaluator.evaluate_all(input_samples)
     scores = spacy_evaluator.calculate_score(evaluation_results)
 

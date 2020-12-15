@@ -187,3 +187,9 @@ model-outputs/
 datasets/
 /model-outputs/
 data/*.json
+
+trained_models
+
+*.egg-info
+
+data
