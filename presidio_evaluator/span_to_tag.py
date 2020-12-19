@@ -65,8 +65,8 @@ def _handle_overlaps(start, end, tag, score):
     index = min(start)
     number_of_spans = len(start)
     i = 0
-    while i < number_of_spans-1:
-        for j in range(i+1,number_of_spans):
+    while i < number_of_spans - 1:
+        for j in range(i + 1, number_of_spans):
             # Span j intersects with span i
             if start[i] <= start[j] <= end[i]:
                 # i's score is higher, remove intersecting part
