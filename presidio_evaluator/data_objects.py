@@ -297,13 +297,13 @@ class InputSample(object):
 
         return pd.DataFrame(conlls)
 
-    def to_spacy(self, entities=None, translate_tags=True):
+    def to_spacy(self, entities=None, translate_tags=True, ignore_unknown=True):
         entities = [(span.start_position, span.end_position, span.entity_type)
                     for span in self.spans if (entities is None) or (span.entity_type in entities)]
         new_entities = []
         if translate_tags:
             for entity in entities:
-                new_tag = self.translate_tag(entity[2], PRESIDIO_SPACY_ENTITIES, ignore_unknown=True)
+                new_tag = self.translate_tag(entity[2], PRESIDIO_SPACY_ENTITIES, ignore_unknown=ignore_unknown)
                 new_entities.append((entity[0], entity[1], new_tag))
         else:
             new_entities = entities
@@ -320,16 +320,18 @@ class InputSample(object):
         return cls(full_text=text, masked=None, spans=spans)
 
     @staticmethod
-    def create_spacy_dataset(dataset, entities=None, sort_by_template_id=False, translate_tags=True):
+    def create_spacy_dataset(dataset, entities=None, sort_by_template_id=False, translate_tags=True,
+                             ignore_unknown=True):
         def template_sort(x):
             return x.metadata['Template#']
 
         if sort_by_template_id:
             dataset.sort(key=template_sort)
 
-        return [sample.to_spacy(entities=entities, translate_tags=translate_tags) for sample in dataset]
+        return [sample.to_spacy(entities=entities, translate_tags=translate_tags, ignore_unknown=ignore_unknown) for
+                sample in dataset]
 
-    def to_spacy_json(self, entities=None, translate_tags=True):
+    def to_spacy_json(self, entities=None, translate_tags=True, ignore_unknown=True):
         token_dicts = []
         for i, token in enumerate(self.tokens):
             if entities:
@@ -338,7 +340,7 @@ class InputSample(object):
                 tag = self.tags[i]
 
             if translate_tags:
-                tag = self.translate_tag(tag, PRESIDIO_SPACY_ENTITIES, ignore_unknown=True)
+                tag = self.translate_tag(tag, PRESIDIO_SPACY_ENTITIES, ignore_unknown=ignore_unknown)
             token_dicts.append({
                 "orth": token.text,
                 "tag": token.tag_,
@@ -368,7 +370,7 @@ class InputSample(object):
         return doc
 
     @staticmethod
-    def create_spacy_json(dataset, entities=None, sort_by_template_id=False, translate_tags=True):
+    def create_spacy_json(dataset, entities=None, sort_by_template_id=False, translate_tags=True, ignore_unknown=True):
         def template_sort(x):
             return x.metadata['Template#']
 
@@ -377,7 +379,8 @@ class InputSample(object):
 
         json_str = []
         for i, sample in tqdm(enumerate(dataset)):
-            paragraph = sample.to_spacy_json(entities=entities, translate_tags=translate_tags)
+            paragraph = sample.to_spacy_json(entities=entities, translate_tags=translate_tags,
+                                             ignore_unknown=ignore_unknown)
             json_str.append({
                 "id": i,
                 "paragraphs": [paragraph]
@@ -425,7 +428,6 @@ class InputSample(object):
             new_tags.append(new_tag)
 
         self.tags = new_tags
-
 
     @staticmethod
     def rename_from_spacy_tags(spacy_tags, ignore_unknown=False):
@@ -538,4 +540,3 @@ class EvaluationResult(object):
             print(row_format.format(entity, precision, recall))
 
         print("PII F measure: {}".format(self.pii_f))
-
